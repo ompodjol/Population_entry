@@ -1,18 +1,18 @@
-#include <istream>
+#include <iostream>
 #include <list>
 using namespace std;
 
 class YouTubeChannel {
 public:
-	string name;
-	string ownerName;
+	string Name;
+	string OwnerName;
 	int SubscribersCount;
 	list<string> PublishedVideoTitles;
 
 	YouTubeChannel(string name, string ownerName) {
 		Name = name;
-		ownerName = ownerName;
-		subscribersCount = 0;
+		OwnerName = ownerName;
+		SubscribersCount = 0;
 	}
 
 	void getInfo() {
@@ -31,6 +31,7 @@ int main()
 	YouTubeChannel ytChannel("CodeBeauty", "Jolly");
 	ytChannel.PublishedVideoTitles.push_back("C++ for beginners");
 
+	ytChannel.getInfo();
 
 	system("pause>0");
 }
