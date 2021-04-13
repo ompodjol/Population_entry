@@ -24,6 +24,8 @@ int main()
 	//updateData(dir);
 	selectData(dir);
 
+	system("pause");
+
 	return 0;
 }
 
