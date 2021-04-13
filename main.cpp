@@ -1,89 +1,124 @@
 #include <iostream>
 #include <list>
+#include <sqlite3.h>
+
 using namespace std;
 
-class YouTubeChannel {
-private:
-	string Name;
-	int SubscribersCount;
-	list<string> PublishedVideoTitles;
-protected:
-	string OwnerName;
-	int ContentQuality;
-
-public:
-	YouTubeChannel(string name, string ownerName) {
-		Name = name;
-		OwnerName = ownerName;
-		SubscribersCount = 0;
-		ContentQuality = 0;
-	}
-	void getInfo() {
-		cout << "Name :" << Name << endl;
-		cout << "OwnerName :" << OwnerName << endl;
-		cout << "SubscribersCount :" << SubscribersCount << endl;
-		cout << "Videos :" << endl;
-		for (string videoTitle : PublishedVideoTitles) {
-			cout << videoTitle << endl;
-		}
-	}
-	void Subscribe() {
-		SubscribersCount++;
-	}
-	void UnSubscribe() {
-		if(SubscribersCount>0)
-			SubscribersCount--;
-	}
-	void PublishedVideo(string title) {
-		PublishedVideoTitles.push_back(title);
-	}
-	void CheckAnalytics() {
-		if (ContentQuality < 5)
-			cout << Name << " has bad quality content." << endl;
-		else
-			cout << Name << " has great quality content." << endl;
-	}
-};
-
-class CookingYouTubeChannel :public YouTubeChannel {
-public:
-	CookingYouTubeChannel(string name, string ownerName):YouTubeChannel(name, ownerName) {
-
-	}
-	void Practice() {
-		cout << OwnerName <<" practicing cooking, learning new recipes, experimenting with spices..." << endl;
-		ContentQuality++;
-	}
-};
-
-class SingersYouTubeChannel : public YouTubeChannel {
-public:
-	SingersYouTubeChannel(string name, string ownerName) :YouTubeChannel(name, ownerName) {
-
-	}
-	void Practice() {
-		cout << OwnerName << " is taking singing classes, learning new songs, learning how to dance..." << endl;
-		ContentQuality++;
-	}
-};
+static int createDB(const char* s);
+static int createTable(const char* s);
+static int insertData(const char* s);
+static int selectData(const char* s);
+static int callback(void* NotUsed, int argc, char** argv, char** azColName);
 
 int main()
 {
-	CookingYouTubeChannel cookingYtChannel("Amy's Kitchen", "Amy");
-	SingersYouTubeChannel singersYtChannel("John's SingerBar", "John");
+	const char* dir = "C:\\Users\\ompodjol\\Documents\\sqlite_dataBase\\STUDENTS.db";
+	sqlite3* DB;
 
-	cookingYtChannel.Practice();
-	singersYtChannel.Practice();
-	singersYtChannel.Practice();
-	singersYtChannel.Practice();
-	singersYtChannel.Practice();
-	singersYtChannel.Practice();
+	createDB(dir);
+	createTable(dir);
+	//insertData(dir);
+	selectData(dir);
 
-	YouTubeChannel* yt1 = &cookingYtChannel;
-	YouTubeChannel* yt2 = &singersYtChannel;
+	return 0;
+}
 
-	yt1->CheckAnalytics();
-	yt2->CheckAnalytics();
+static int createDB(const char* s)
+{
+	sqlite3* DB;
+	int exit = 0;
 
-	system("pause>0");
+	exit = sqlite3_open(s, &DB);
+
+	sqlite3_close(DB);
+
+	sqlite3_close(DB);
+
+	return 0;
+}
+
+static int createTable(const char* s)
+{
+	sqlite3* DB;
+
+	string sql = "CREATE TABLE IF NOT EXISTS GRADES("
+		"ID INTEGER PRIMARY KEY AUTOINCREMENT, "
+		"NAME	TEXT NOT NULL, "
+		"LNAME	TEXT NOT NULL, "
+		"AGE	INT NOT NULL, "
+		"ADDRESS CHAR(50), "
+		"GRADE	CHAR(1) );";
+
+	try
+	{
+		int exit = 0;
+		exit = sqlite3_open(s, &DB);
+
+		char* messageError;
+		exit = sqlite3_exec(DB, sql.c_str(), NULL, 0, &messageError);
+
+		if (exit != SQLITE_OK) {
+			cerr << "Error Create Table" << endl;
+			sqlite3_free(messageError);
+		}
+		else
+			cout << "Table created Successfully" << endl;
+		sqlite3_close(DB);
+	}
+	catch (const exception & e)
+	{
+		cerr << e.what();
+	}
+
+	return 0;
+}
+
+static int insertData(const char* s)
+{
+	sqlite3* DB;
+	char* messageError;
+	
+	int exit = sqlite3_open(s, &DB);
+	
+	string sql("INSERT INTO GRADES (NAME, LNAME, AGE, ADDRESS, GRADE) VALUES('Alice', 'Chapa', 35, 'Tampa', 'A');"
+		"INSERT INTO GRADES (NAME, LNAME, AGE, ADDRESS, GRADE) VALUES('Bob', 'Lee', 20, 'Dalla', 'B');"
+		"INSERT INTO GRADES (NAME, LNAME, AGE, ADDRESS, GRADE) VALUES('Fred', 'Cooper', 24, 'New York', 'C');");
+
+	exit = sqlite3_exec(DB, sql.c_str(), NULL, 0, &messageError);
+	if (exit != SQLITE_OK) {
+		cerr << "Error Insert" << endl;
+		sqlite3_free(messageError);
+	}
+	else
+		cout << "Records created Successfully!" << endl;
+
+	return 0;
+}
+
+static int selectData(const char* s)
+{
+	sqlite3* DB;
+	
+	int exit = sqlite3_open(s, &DB);
+
+	string sql = "SELECT * FROM GRADES;";
+
+		/*An open database, SQL to be evaluated, Callback function, 1st argument to callback, Error msg written here */
+		sqlite3_exec(DB, sql.c_str(), callback, NULL, NULL);
+
+		return 0;
+}
+
+// retrieve contents of database used by selectData()
+/* argc: holds the number of results, azColName: holds each column returned in array, argv: holds each value in array */
+static int callback(void* NotUsed, int argc, char** argv, char** azColName)
+{
+	for (int i = 0; i < argc; i++) {
+		// column name and value
+		cout << azColName[i] << argv[i] << endl;
+	}
+
+	cout << endl;
+
+	return 0;
 }
